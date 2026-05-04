@@ -1,248 +1,187 @@
-<div align="center">
+# Visual Uncertainty in Mathematical Reasoning
+### Does Visual Context Help or Hurt LLMs on University-Level Mathematics?
 
-# 📐 Visual UQ Math
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Status: Pilot Study](https://img.shields.io/badge/status-pilot--study-orange.svg)]()
 
-### *Do Vision-Language Models Actually Use Diagrams in Advanced Mathematics?*
-
-[![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python)](https://python.org)
-[![LLaVA](https://img.shields.io/badge/Model-LLaVA--7B-orange)](https://ollama.com/library/llava)
-[![Ollama](https://img.shields.io/badge/Runtime-Ollama-black)](https://ollama.com)
-[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
-
-**A pilot study evaluating visual information integration in mathematical reasoning using open-source VLMs.**
-
-*MRes Research Pilot · University-to-Olympiad Level · 60 Problems · 4 Subjects*
-
-</div>
+> **Pilot experiment supporting an MRes research proposal**  
+> *Evaluating and Modelling Uncertainty in Machine Learning Systems*
 
 ---
 
-## 🔬 What This Is
+## Overview
 
-A reproducible pilot experiment investigating whether visual context (programmatically generated diagrams) genuinely improves mathematical reasoning in large vision-language models — specifically **LLaVA-7B** running locally via Ollama.
+This repository contains the code, data pipeline, and draft paper for a pilot study investigating a fundamental open question in multimodal AI:
 
-The experiment targets **four non-geometric subjects** at three difficulty levels:
+**When a vision-language model is given a diagram alongside a mathematical problem, does the visual input genuinely improve reasoning — or does the model ignore it?**
 
-| Subject | Difficulty | N problems |
-|---|---|---|
-| Calculus | University → Olympiad | 15 |
-| Combinatorics | University → Olympiad | 15 |
-| Linear Algebra | University → Olympiad | 15 |
-| Number Theory | University → Olympiad | 15 |
-
-Each problem is evaluated in two conditions: **text-only** and **text + visual** (programmatic diagram).
+This question has been studied on geometry-heavy benchmarks (MathVista, MathVerse) but has **never been systematically evaluated on university and Olympiad-level difficulty** — precisely the level targeted by MathOdyssey (Fang et al., 2024). This pilot study fills that gap using a curated 60-problem subset spanning four non-geometric subject areas.
 
 ---
 
-## 📊 Key Results (LLaVA-7B, 60 problems)
+## Research Question
 
-| Subject | Text-only | Text+Visual | Δ | MI Proxy |
-|---|---|---|---|---|
-| Calculus | 60.0% | 60.0% | 0.0 pp | 0.000 bits |
-| Combinatorics | 33.3% | 15.4% | **−17.9 pp** | +0.299 bits |
-| Linear Algebra | 53.3% | 72.7% | **+19.4 pp** | +0.151 bits |
-| Number Theory | 33.3% | 57.1% | **+23.8 pp** | −0.067 bits |
-| **Overall** | **45.0%** | **50.0%** | **+5.0 pp** | — |
+> *Do multimodal LLMs genuinely use visual representations when reasoning about university-level mathematics, and does this vary by subject area?*
 
-### 🔑 The Fidelity Paradox
+This is evaluated through two lenses:
 
-> When LLaVA **references** the diagram: **43.8% accuracy**  
-> When LLaVA **ignores** the diagram: **64.3% accuracy**
-
-Visual engagement correlates **negatively** with correctness — a surprising finding that motivates deeper uncertainty-theoretic investigation.
+1. **Accuracy delta** — does adding a diagram improve or hurt correctness?
+2. **Reasoning fidelity** — does the model's chain-of-thought actually reference the visual content?
 
 ---
 
-## 🗂️ Repository Structure
+## Project Structure
 
 ```
 visual_uq_math/
 │
 ├── src/
-│   ├── dataset.py           # 60-problem pilot dataset with stratified sampling
-│   ├── image_gen.py         # Programmatic diagram generation (matplotlib, sympy, networkx)
-│   ├── evaluator.py         # Type-aware answer checker (integer / symbolic / proof-sketch)
-│   ├── llava_evaluator.py   # LLaVA inference via Ollama or HuggingFace
-│   └── analysis.py          # Statistics: accuracy, MI proxy, McNemar, reasoning fidelity
-│
-├── paper/
-│   └── draft_paper.md       # Full draft paper with real experimental results
-│
-├── results/
-│   ├── raw/                 # JSON results (one file per model × condition)
-│   └── figures/             # Auto-generated plots (fig1–fig4 + diagrams)
+│   ├── dataset.py          # Dataset loading and stratified sampling
+│   ├── image_gen.py        # Programmatic diagram generation (matplotlib/sympy)
+│   ├── evaluator.py        # API runner — GPT-4o, Gemini, mock mode
+│   ├── analysis.py         # Accuracy, delta, reasoning fidelity analysis
+│   └── uncertainty.py      # Information-theoretic measures (mutual info proxy)
 │
 ├── data/
-│   └── pilot_problems.json  # Generated dataset (auto-created on first run)
+│   ├── pilot_problems.json # 60 curated problems with metadata
+│   └── README.md           # Data documentation
 │
-├── notebooks/               # Exploratory analysis notebooks
-├── tests/                   # Unit tests for pipeline components
+├── results/
+│   ├── raw/                # JSON results per model per condition
+│   └── figures/            # Generated charts and tables
 │
-├── run_experiment.py        # Main entry point — runs full pipeline
-├── reanalyse.py             # Re-run answer extraction + analysis on saved results
-└── requirements.txt
+├── notebooks/
+│   └── pilot_analysis.ipynb  # End-to-end walkthrough notebook
+│
+├── paper/
+│   └── draft_paper.md      # Draft paper (NeurIPS workshop style)
+│
+├── tests/
+│   └── test_pipeline.py    # Unit tests for all modules
+│
+├── run_experiment.py       # Main entry point
+├── requirements.txt        # Python dependencies
+├── .env.example            # API key template
+└── README.md
 ```
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
-### Prerequisites
-
-**1. Install Ollama** → [https://ollama.com](https://ollama.com)
-
-**2. Pull LLaVA:**
 ```bash
-ollama pull llava
-```
-
-**3. Set up Python environment:**
-```bash
-git clone https://github.com/HusamHassan2301/visual_uq_math
+# 1. Clone the repository
+git clone https://github.com/YOUR_USERNAME/visual_uq_math.git
 cd visual_uq_math
 
-python -m venv venv
-source venv/bin/activate          # Windows: venv\Scripts\activate
+# 2. Install dependencies
 pip install -r requirements.txt
-```
 
-### Run the Experiment
+# 3. Set up API keys (optional — mock mode works without keys)
+cp .env.example .env
+# Edit .env and add your OpenAI API key
 
-```bash
-# Quick test — 12 problems (~30 min on CPU)
-python run_experiment.py --mode llava --backend ollama --n_problems 12
+# 4. Run in mock mode (no API key needed — uses synthetic results)
+python run_experiment.py --mode mock --n_problems 20
 
-# Full experiment — 60 problems (~4–8 hours on CPU)
-python run_experiment.py --mode llava --backend ollama --n_problems 60
-```
-
-### Re-run Analysis on Saved Results
-
-```bash
-python reanalyse.py
-```
-
-### Mock Mode (no GPU/API needed — instant)
-
-```bash
-python run_experiment.py --mode mock
-```
-
----
-
-## ⚙️ All Run Modes
-
-```bash
-# LLaVA via Ollama (local — recommended)
-python run_experiment.py --mode llava --backend ollama
-python run_experiment.py --mode llava --backend ollama --ollama_model llava:13b
-
-# LLaVA via HuggingFace (GPU server / HPC)
-python run_experiment.py --mode llava --backend hf \
-    --hf_model llava-hf/llava-1.5-7b-hf --quantize 4bit
-
-# GPT-4o API (requires OPENAI_API_KEY in .env)
+# 5. Run with real API (requires OpenAI key)
 python run_experiment.py --mode api --model gpt4o --n_problems 20
 
-# Generate diagrams only
-python run_experiment.py --mode generate_diagrams
-
-# Re-analyse existing results
-python run_experiment.py --mode analyse --model llava-ollama-llava
+# 6. View results
+python run_experiment.py --mode analyse
 ```
 
 ---
 
-## 📐 Methods
+## Pilot Dataset
 
-### Dataset
+60 problems hand-curated across four non-geometric subject areas and three difficulty levels:
 
-60 hand-curated problems spanning university, competition, and Olympiad difficulty levels across four non-geometric subjects. Problems are self-contained (solvable from text alone) but amenable to meaningful visual representation.
+| Subject | Problems | Difficulty Range |
+|---|---|---|
+| Calculus & Analysis | 15 | University → Olympiad |
+| Combinatorics | 15 | University → Olympiad |
+| Linear Algebra | 15 | University → Olympiad |
+| Number Theory | 15 | University → Olympiad |
 
-### Diagram Generation
-
-Diagrams are generated programmatically using `matplotlib`, `sympy`, and `networkx`. Each problem type maps to a principled visual representation:
-
-- **Calculus:** Function plots, Taylor approximation curves, area-under-curve shading
-- **Combinatorics:** Pascal's triangle, lattice path grids, Ramsey/tournament graphs
-- **Linear Algebra:** Eigenspace visualisations, vector projections, transformation diagrams
-- **Number Theory:** Prime factor trees, modular arithmetic grids, Pell equation hyperbola plots
-
-### Metrics
-
-| Metric | Definition |
-|---|---|
-| **Accuracy** | Proportion correct per condition |
-| **Accuracy Delta (Δ)** | `Acc(text+visual) − Acc(text-only)` |
-| **Visual Reference Rate** | % of text+visual responses mentioning the diagram |
-| **MI Proxy** | `H(correct\|text-only) − H(correct\|text+visual)` in bits |
-
-### Answer Checker
-
-Three-tier type-aware system:
-1. **Integer/float** — exact numeric match within 1e-4
-2. **Symbolic** — expression equality via sympy
-3. **Proof/sketch** — keyword Jaccard overlap ≥ 0.25 or core-hit rate ≥ 33%
+Each problem exists in two conditions:
+- **Text-only**: the problem statement as plain text
+- **Text + Diagram**: the problem statement plus a programmatically generated visual representation
 
 ---
 
-## 📄 Paper
+## Key Hypotheses
 
-The draft paper (`paper/draft_paper.md`) follows NeurIPS workshop format and includes:
+**H1 (Visual Null):** Adding a diagram does not significantly change accuracy on university-level problems (accuracy delta ≈ 0).
 
-- Full experimental results with real LLaVA-7B inference data
-- Subject-level accuracy, MI-proxy, and fidelity analysis
-- Discussion of the fidelity paradox
-- Connection to Bayesian UQ and imprecise probability literature
-- Proposed MRes research programme
+**H2 (Subject Interaction):** The effect of visual context varies by subject — diagrams may help on calculus (function plots) but hurt on number theory (no natural visual representation).
+
+**H3 (Reasoning Fidelity):** Models that show accuracy improvement with visual input also show higher rates of visual reference in their chain-of-thought reasoning.
 
 ---
 
-## 🔧 Requirements
+## Connecting to Uncertainty Research
+
+This pilot connects to the broader uncertainty quantification agenda through an information-theoretic lens:
+
+If `I(answer ; image | text) ≈ 0` across subject areas, visual input contributes no information beyond the text — the model's uncertainty about the correct answer is not reduced by the diagram. This is a measurable, quantifiable claim that connects directly to the MRes research programme on uncertainty in ML systems.
+
+---
+
+## Draft Paper
+
+See [`paper/draft_paper.md`](paper/draft_paper.md) for the full draft written in NeurIPS workshop style. The paper presents:
+- Motivation and related work
+- Methodology
+- Pilot results and analysis
+- Discussion of implications for the MRes research programme
+
+---
+
+## Dependencies
 
 ```
-Core: matplotlib, sympy, networkx, pillow, numpy, pandas, scipy, python-dotenv, tqdm, requests
-LLaVA (HF backend): transformers, accelerate, bitsandbytes (optional, for quantisation)
-GPT-4o: openai
-```
-
-For HPC (Liverpool Barkla):
-```bash
-module load cuda/12.1
-pip install transformers accelerate bitsandbytes --user
-python run_experiment.py --mode llava --backend hf \
-    --hf_model llava-hf/llava-1.5-7b-hf --quantize 4bit
+datasets>=2.18.0
+openai>=1.12.0
+google-generativeai>=0.4.0
+matplotlib>=3.8.0
+sympy>=1.12
+networkx>=3.2
+pillow>=10.2.0
+numpy>=1.26.0
+pandas>=2.2.0
+scipy>=1.12.0
+python-dotenv>=1.0.0
+tqdm>=4.66.0
 ```
 
 ---
 
-## 📜 Citation
+## Citation
 
-If you use this codebase or dataset, please cite:
+If you use this code or dataset in your work, please cite:
 
 ```bibtex
-@misc{sadig2026visualuqmath,
-  author = {Hussam Sadig},
-  title  = {Visual UQ Math: A Pilot Study of Visual Information Integration
-             in Advanced Mathematical Reasoning},
-  year   = {2026},
-  url    = {https://github.com/HusamHassan2301/visual_uq_math}
+@misc{visualuq2025,
+  title  = {Visual Uncertainty in Mathematical Reasoning: Does Diagram Context Help or Hurt LLMs?},
+  author = {[Author Name]},
+  year   = {2025},
+  note   = {Pilot study, MRes research proposal supporting document},
+  url    = {https://github.com/YOUR_USERNAME/visual_uq_math}
 }
 ```
 
 ---
 
-## 📚 References
+## Related Work
 
-- Zhang et al. (2024). *MathVerse: Does Your Multi-modal LLM Truly See the Diagrams in Visual Math Problems?* ECCV 2024.
-- Lu et al. (2023). *MathVista: Evaluating Mathematical Reasoning of Foundation Models in Visual Contexts.* NeurIPS.
-- Fang et al. (2024). *MathOdyssey: Benchmarking Mathematical Problem-Solving Skills in LLMs.* Scientific Data.
-- Liu et al. (2023). *Visual Instruction Tuning (LLaVA).* NeurIPS.
-- Gal & Ghahramani (2016). *Dropout as a Bayesian Approximation.* ICML.
-- Caprio et al. (2023). *Credal Bayesian Deep Learning.* arXiv:2302.09656.
+- **MathOdyssey** (Fang et al., 2024) — University and Olympiad-level text math benchmark
+- **MathVista** (Lu et al., 2023) — Multimodal math benchmark (geometry-heavy)
+- **MathVerse** (Zhang et al., 2024) — Visual ablation study for multimodal math
+- **Credal Bayesian Deep Learning** (Caprio et al., 2023) — Imprecise probability UQ
+- **Uncertainty in Deep Learning** (Gal, 2016) — Foundational Bayesian UQ framework
 
 ---
 
-<div align="center">
-<sub>Pilot study for MRes by Research in Uncertainty Quantification and Multimodal AI</sub>
-</div>
+*This repository is part of an MRes application portfolio. The pilot study demonstrates research capability and methodological competence in the proposed area of study.*
