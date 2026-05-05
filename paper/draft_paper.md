@@ -1,10 +1,7 @@
 # Visual Information in Advanced Mathematical Reasoning: A Pilot Study with LLaVA-7B
 
-**Hussam Sadig**  
-[Institution], [Email]
-
-*MRes Research Proposal Supporting Document — Pilot Study*  
-*Submitted for consideration by supervisors in uncertainty quantification and multimodal AI*
+**Husam Hassan**  
+husamsadig@gmail.com
 
 ---
 

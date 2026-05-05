@@ -2,8 +2,6 @@
 
 A pilot study on whether programmatically generated diagrams improve mathematical reasoning in open-source vision-language models. Evaluated using LLaVA-7B on 60 problems across four subjects at university and Olympiad difficulty.
 
-This is a preliminary experiment accompanying an MRes research proposal in uncertainty quantification and multimodal AI.
-
 ---
 
 ## Research Question
