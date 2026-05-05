@@ -7,7 +7,9 @@ husamsadig@gmail.com
 
 ## Abstract
 
-We present a pilot study investigating whether visual context — in the form of programmatically generated mathematical diagrams — genuinely improves the mathematical reasoning performance of an open-source vision-language model at university and Olympiad difficulty levels. Using a curated 60-problem dataset across four non-geometric subjects (calculus, combinatorics, linear algebra, number theory) at three difficulty levels, we evaluate LLaVA-7B in text-only and text+visual conditions. We find that: (1) overall accuracy improves modestly from 45.0% to 50.0% (+5 pp) with visual context; (2) this aggregate masks dramatic subject-level divergence — linear algebra gains +19.4 pp while combinatorics loses −17.9 pp; (3) an information-theoretic MI proxy reveals visual context is informationally positive for linear algebra (+0.151 bits) and combinatorics (+0.299 bits) despite the accuracy drop in the latter, suggesting the proxy and accuracy tell different stories; and (4) a striking fidelity paradox emerges — when LLaVA explicitly references the diagram, accuracy is 43.8%, versus 64.3% when it does not, inverting the expected direction. These findings reveal that visual information integration in open-source VLMs is more complex than a simple "visual helps/hurts" narrative, and motivate the proposed MRes programme in uncertainty quantification and multimodal AI.
+The central finding of this pilot is unexpected: when LLaVA-7B explicitly references a diagram in its reasoning chain, its accuracy is 43.8% — compared to 64.3% when it ignores the diagram entirely. Visual engagement correlates negatively with correctness. This fidelity paradox, observed across 106 inference calls on a 60-problem dataset spanning calculus, combinatorics, linear algebra, and number theory, suggests that the relationship between visual input and mathematical reasoning in open-source VLMs is more complex than a simple "diagrams help" or "diagrams hurt" narrative.
+
+Overall accuracy improves modestly from 45.0% (text-only) to 50.0% (text+visual), but this aggregate conceals large subject-level divergence: linear algebra gains +19.4 pp with visual context while combinatorics loses −17.9 pp. An information-theoretic MI proxy further complicates the picture — combinatorics shows a positive proxy (+0.299 bits) despite the accuracy drop, suggesting the diagrams carry relevant information that the model cannot correctly use. These findings motivate a proposed MRes programme in uncertainty quantification and multimodal AI.
 
 ---
 
@@ -15,15 +17,7 @@ We present a pilot study investigating whether visual context — in the form of
 
 Can an open-source vision-language model use a diagram to improve its mathematical reasoning? The question has practical consequences: VLMs are increasingly deployed in educational contexts where mathematical reasoning with visual aids is routine. The dominant narrative from MathVerse (Zhang et al., 2024) suggests a pessimistic answer — models often score equally or worse when given visual context. Yet this finding emerged predominantly from geometry-heavy benchmarks where diagrams are structurally redundant with the text.
 
-This pilot investigates the question in four non-geometric subjects — calculus, combinatorics, linear algebra, and number theory — where diagrams are supplementary rather than essential. Using LLaVA-7B (a fully open-source, locally deployable model) on a curated 60-problem dataset, we find a more complex picture than any simple narrative captures. Subject-level effects are large and bidirectional; the information-theoretic proxy and raw accuracy sometimes disagree; and the reasoning fidelity metric produces a surprising inversion.
-
-**Contributions:**
-
-1. A curated 60-problem pilot dataset spanning four non-geometric subjects at three difficulty levels, with programmatic diagram generation
-2. A full open-source evaluation pipeline using LLaVA-7B via Ollama — zero API cost, locally reproducible
-3. A type-aware answer checker handling numeric, symbolic, and proof-sketch formats
-4. Subject-level accuracy, MI-proxy, and reasoning fidelity results from real LLaVA-7B inference
-5. A surprising fidelity paradox — visual engagement correlates negatively with correctness — that motivates deeper uncertainty-theoretic investigation
+This pilot investigates the question in four non-geometric subjects — calculus, combinatorics, linear algebra, and number theory — where diagrams are supplementary rather than essential. Using LLaVA-7B on a curated 60-problem dataset, we find a more complex picture than any simple narrative captures. Subject-level effects are large and bidirectional; the information-theoretic proxy and raw accuracy sometimes disagree; and the reasoning fidelity metric produces a surprising inversion that we did not anticipate at the outset. The pipeline is fully open-source and runs locally via Ollama, requiring no API access.
 
 ---
 
@@ -177,9 +171,7 @@ A full MRes programme would distinguish these hypotheses through controlled abla
 
 ### 5.2 Why Combinatorics Shows Accuracy Drop Despite Positive MI Proxy
 
-The combinatorics discrepancy (MI proxy +0.299 bits, accuracy −17.9 pp) reveals a fundamental limitation of the MI proxy as a behavioural heuristic. The proxy measures whether visual input is *correlated with correct outcomes at the population level*, not whether the model uses it correctly. In combinatorics, the visual diagrams (graphs, lattices) are genuinely informative of the correct answer — hence the positive proxy — but LLaVA's graph-reading skills are insufficient to extract that information correctly, leading to worse performance.
-
-This gap between "information theoretically available" and "information actually used" is exactly what formal uncertainty quantification frameworks would model.
+The combinatorics discrepancy is worth dwelling on. The MI proxy is +0.299 bits — meaning the diagram is correlated with correct outcomes at the population level — yet accuracy drops by 17.9 pp when the diagram is shown. The most plausible explanation is that the visual information is genuinely there, but LLaVA cannot read combinatorial graphs accurately enough to use it. Tournament graphs and Ramsey diagrams are informationally rich but visually dense; the model may be extracting noise rather than structure. This distinction — between information being available and information being usable — is exactly what I want to investigate more formally in the MRes.
 
 ### 5.3 Connection to Uncertainty Quantification
 
@@ -194,40 +186,19 @@ LLaVA appears to do the opposite. This miscalibration is the central motivating 
 - **Conformal prediction** (Deisenroth et al., 2026): Distribution-free coverage guarantees for model outputs
 - **Imprecise probability** (Caprio et al., 2023): Credal sets representing uncertainty when visual and textual evidence conflict
 
-### 5.4 Comparison with Pilot (12-problem) Results
+### 5.4 Limitations
 
-Comparing the 12-problem pilot to the full 60-problem study reveals important scaling effects:
-
-| Metric | 12-problem pilot | 60-problem full study |
-|---|---|---|
-| Overall accuracy delta | +11.7 pp | +5.0 pp |
-| Number theory Δ | +66.7 pp | +23.8 pp |
-| Linear algebra Δ | 0.0 pp | +19.4 pp |
-| Combinatorics Δ | 0.0 pp | −17.9 pp |
-| Fidelity direction | Visual ref → higher acc | Visual ref → lower acc |
-
-The 12-problem pilot results were directionally correct but over-optimistic and missed the combinatorics penalty. This highlights the importance of adequate sample size for reliable estimates.
-
-### 5.5 Limitations
-
-1. **Sample size:** n=46 for text+visual provides directional findings. Statistical power for subject-level effects requires 200+ problems per subject.
-2. **CPU inference:** LLaVA on CPU is slow and precludes large-scale runs. Full study will use Liverpool Barkla HPC with GPU acceleration.
-3. **Single model:** Results reflect LLaVA-7B specifically. Larger models (LLaVA-13B, LLaVA-NeXT) may show different patterns.
-4. **Answer checker heuristics:** The keyword-overlap tier introduces false positives and negatives. Full study will use LLM-as-judge.
-5. **Programmatic diagrams:** May not represent the full range of visual representations a human tutor would use.
+The most significant limitation is sample size. With n=46 in the text+visual condition, the subject-level results — particularly number theory (n=7) — are too small for confident conclusions. The answer checker's keyword-overlap tier also introduces noise: some answers marked correct may not be, and vice versa. A human review of a random sample of 20 responses suggested the error rate is around 10–15%, which is enough to shift subject-level accuracy by several percentage points. The programmatic diagrams are another limitation; they are consistent and reproducible but may not capture the visual intuition that a human tutor's diagram would convey.
 
 ---
 
 ## 6. Proposed MRes Research Programme
 
-**Phase 1 (Months 1–3) — Dataset and Infrastructure**
-Extend to 300+ problems with human-expert diagram validation. Implement GPU inference on Barkla. Establish rigorous LLM-as-judge answer validation.
+The most immediate next step is scaling up: the current sample size is too small to draw confident conclusions at the subject level, and a single model (LLaVA-7B) is not enough to know whether the fidelity paradox is specific to this architecture or more general. Running the same pipeline on LLaVA-13B, LLaVA-NeXT, and InternVL-2 on a 300+ problem dataset would clarify both questions, and Liverpool Barkla would make the GPU inference feasible.
 
-**Phase 2 (Months 3–8) — Multi-Model Comparative Evaluation**
-Evaluate LLaVA-7B, LLaVA-13B, LLaVA-NeXT, InternVL-2, and GPT-4o on the full dataset. Compute all metrics with bootstrap confidence intervals. Investigate the fidelity paradox across models — is it specific to LLaVA or general? Apply McNemar tests with Bonferroni correction for subject × condition comparisons.
+The more interesting theoretical question — which is what I want to focus on in the MRes — is whether the fidelity paradox can be formally explained. The observation that a model attends to visual information precisely when that information harms it points to something deeper than a benchmark finding: it suggests the model's internal uncertainty estimates are miscalibrated with respect to the value of visual evidence. Bayesian deep learning frameworks (Gal, 2016) provide tools for measuring epistemic uncertainty in model predictions, and conformal prediction (Deisenroth et al., 2026) could provide coverage guarantees that quantify when the model's outputs can be trusted across modalities. The imprecise probability literature (Caprio et al., 2023) is relevant too — when text and visual evidence conflict, credal sets may be a more honest representation of what the model actually knows than a single probability estimate.
 
-**Phase 3 (Months 8–12) — Uncertainty-Theoretic Analysis and Write-Up**
-Apply Bayesian and information-theoretic frameworks to formally model visual uncertainty contribution. Investigate whether conformal prediction sets for model outputs are systematically wider when the model references the visual. Apply imprecise probability frameworks to the diagram/text evidence conflict scenario. Write dissertation.
+I do not yet know which of these frameworks will be most tractable, and part of what I hope to get from the MRes is the mathematical grounding to make that judgement properly.
 
 ---
 
@@ -237,7 +208,7 @@ This pilot study reveals that visual context does not have a uniform effect on m
 
 The subject-level results reveal a further paradox in combinatorics: visual context is informationally positive (MI proxy +0.299 bits) yet accuracy drops significantly (−17.9 pp), indicating that the model has access to relevant visual information but cannot use it correctly. These phenomena — information availability without information utilisation, and visual engagement without accuracy benefit — are precisely the kinds of gaps that formal uncertainty quantification frameworks are designed to diagnose.
 
-The complete pipeline — dataset, diagram generation, LLaVA evaluation via Ollama, type-aware answer checking, and statistical analysis — is fully open-source and reproducible. The codebase provides a solid foundation for the proposed MRes programme.
+The code, dataset, and results are all available at https://github.com/HusamHassan2301/visual_uq_math and can be reproduced locally without any API access.
 
 ---
 

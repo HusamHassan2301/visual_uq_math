@@ -22,7 +22,7 @@ This is evaluated through two lenses: accuracy (does adding a diagram change cor
 | Number Theory | 33.3% | 57.1% | +23.8 pp |
 | Overall | 45.0% | 50.0% | +5.0 pp |
 
-The most unexpected finding: when LLaVA explicitly references the diagram in its reasoning, accuracy is 43.8% — compared to 64.3% when it does not reference it. Visual engagement correlates negatively with correctness.
+The most unexpected finding: when LLaVA explicitly references the diagram in its reasoning, accuracy is 43.8% — compared to 64.3% when it does not. Visual engagement correlates negatively with correctness. These results are preliminary given the sample size; subject-level findings in particular should be treated with caution.
 
 ---
 
@@ -31,7 +31,7 @@ The most unexpected finding: when LLaVA explicitly references the diagram in its
 ```
 visual_uq_math/
 ├── src/
-│   ├── dataset.py           # 60-problem dataset with stratified sampling
+│   ├── dataset.py           # Problem dataset with stratified sampling
 │   ├── image_gen.py         # Diagram generation (matplotlib, sympy, networkx)
 │   ├── evaluator.py         # Type-aware answer checker
 │   ├── llava_evaluator.py   # LLaVA inference via Ollama or HuggingFace
@@ -104,11 +104,11 @@ python run_experiment.py --mode api --model gpt4o --n_problems 20
 
 ## Methods
 
-**Dataset:** 60 hand-curated problems across calculus, combinatorics, linear algebra, and number theory. Each subject has 5 problems at each of three difficulty levels: university, competition, and Olympiad. Problems are self-contained but have natural visual representations.
+**Dataset:** 60 problems across calculus, combinatorics, linear algebra, and number theory, with 5 problems at each of three difficulty levels: university, competition, and Olympiad. Problems were selected to be self-contained from text alone, so that any visual effect is genuinely supplementary rather than structurally necessary. For combinatorics problems without a natural graph structure, lattice path diagrams were used as a proxy — a limitation worth noting.
 
-**Diagrams:** Generated programmatically using matplotlib, sympy, and networkx. Each problem type maps to a specific visual format — function plots for calculus, graph diagrams for combinatorics, eigenspace visualisations for linear algebra, modular grids for number theory.
+**Diagrams:** Generated programmatically using matplotlib, sympy, and networkx. The choice to generate rather than use existing figures was deliberate: it ensures consistency across conditions and makes the visual content fully reproducible. The tradeoff is that the diagrams may lack the pedagogical quality of human-drawn figures.
 
-**Evaluation:** Each problem is run in two conditions — text-only and text+visual. Accuracy is measured using a three-tier type-aware checker: exact numeric matching, symbolic equality via sympy, and keyword overlap for proof-style answers.
+**Evaluation:** Each problem is run in two conditions — text-only and text+visual. Accuracy is measured using a three-tier type-aware checker: exact numeric matching, symbolic equality via sympy, and keyword overlap for proof-style answers. The keyword-overlap tier is the weakest part of the pipeline and introduces some noise in the results.
 
 **Metrics:** Accuracy delta (text+visual minus text-only), visual reference rate (how often the model mentions the diagram), and an MI proxy (binary entropy reduction from visual context).
 
@@ -116,7 +116,7 @@ python run_experiment.py --mode api --model gpt4o --n_problems 20
 
 ## Paper
 
-The full draft paper is in `paper/draft_paper.md`. It covers the experimental design, all results tables, discussion of the fidelity paradox, and a proposed three-phase MRes research programme connecting these findings to Bayesian uncertainty quantification and imprecise probability.
+The full draft paper is in `paper/draft_paper.md`. It covers the experimental design, results, discussion of the fidelity paradox, and a proposed MRes research programme connecting these findings to Bayesian uncertainty quantification and imprecise probability.
 
 ---
 
