@@ -258,6 +258,6 @@ The complete pipeline — dataset, diagram generation, LLaVA evaluation via Olla
 
 ---
 
-*Code: [https://github.com/YOUR_USERNAME/visual_uq_math](https://github.com/YOUR_USERNAME/visual_uq_math)*  
+*Code: https://github.com/HusamHassan2301/visual_uq_math*  
 *Reproduce: `python run_experiment.py --mode llava --backend ollama --n_problems 60`*  
 *Re-analyse: `python reanalyse.py`*
